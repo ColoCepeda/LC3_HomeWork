@@ -40,3 +40,8 @@
 .read-the-docs {
   color: #888;
 }
+
+.table th,
+.table td {
+  border-color: white;
+}
