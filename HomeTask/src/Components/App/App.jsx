@@ -1,35 +1,65 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react";
+import "./App.css";
+import Task from "./Task";
+import TaskForm from "./TaskForm";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [tasks, setTasks] = useState([]);
+
+  useEffect(() => {
+    if (tasks.length === 0) return;
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+  }, [tasks]);
+
+  useEffect(() => {
+    const storedTasks = JSON.parse(localStorage.getItem("tasks"));
+    if (storedTasks) {
+      setTasks(storedTasks);
+    }
+  }, []);
+
+  function addTask(name) {
+    if (name.trim() === "") return;
+    setTasks((prev) => {
+      return [...prev, { name: name, done: false }];
+    });
+  }
+
+  function removeTask(indexToRemove) {
+    setTasks((prev) => {
+      return prev.filter((taskObject, index) => index !== indexToRemove);
+    });
+  }
+
+  function updateTaskDone(taskIndex, newDone) {
+    setTasks((prev) => {
+      const newTasks = [...prev];
+      newTasks[taskIndex].done = newDone;
+      return newTasks;
+    });
+  }
+
+  const numberTotal = tasks.length;
+  const numberComplete = tasks.filter((t) => t.done).length;
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <main>
+        <h1>
+          To Do List {numberComplete}/{numberTotal}
+        </h1>
+        <TaskForm onAdd={addTask} />
+        {tasks.map((task, index) => (
+          <Task
+            key={index}
+            {...task}
+            onToggle={(done) => updateTaskDone(index, done)}
+            onTrash={() => removeTask(index)}
+          />
+        ))}
+      </main>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
